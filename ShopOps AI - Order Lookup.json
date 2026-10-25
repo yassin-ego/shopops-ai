@@ -1,0 +1,296 @@
+{
+  "name": "ShopOps AI - Order Lookup.",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "shopops-order-lookup",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "106376c4-bb39-45bc-a8c5-381a3f926576",
+      "name": "Webhook",
+      "webhookId": "0309caf1-f729-4a53-b9e4-390f38690168"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1luw8aI-NmL32ysJQJxDPz1SaOmDlcdRcDg7NS6F3gt8",
+          "mode": "list",
+          "cachedResultName": "ShopOps AI.",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1luw8aI-NmL32ysJQJxDPz1SaOmDlcdRcDg7NS6F3gt8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1luw8aI-NmL32ysJQJxDPz1SaOmDlcdRcDg7NS6F3gt8/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Order ID",
+              "lookupValue": "={{ $json.body.order_id }}"
+            },
+            {
+              "lookupColumn": "Customer Email",
+              "lookupValue": "={{ $json.body.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "0593ed33-830c-4b5f-b3b2-14dd9a8abbc8",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "b6TM0b82GiapyZlO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9b6260cd-cf4c-4718-8b61-952105a3c9b8",
+              "leftValue": "={{ $json[\"Order ID\"] }}",
+              "rightValue": "ORD-1002",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "4890887f-08ce-4ff2-a1d6-3cc0718057e0",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "821b2cf6-436e-4fe6-9760-6667f0a5f8bf",
+              "name": "reply",
+              "value": "=={{  \"Order \" + $json[\"Order ID\"] +  \" | Customer: \" + $json[\"Customer Name\"] +  \" | Status: \" + $json[\"Status\"] +  \" | Tracking: \" + $json[\"Tracking Number\"] +  \" | Expected delivery: \" + $json[\"Expected Delivery\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "33a26207-d385-4707-82aa-d664d3808f71",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"reply\": \"{{ $json.reply }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "9b9b2c47-b2b8-472d-968c-720311712726",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://nerowatches.myshopify.com/admin/oauth/access_token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "name": "client_id",
+              "value": "7bec80d7e90c36f0b482b70746d0fda4"
+            },
+            {
+              "name": "client_secret",
+              "value": 28756717855875"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "f082d04d-1a72-4c59-979a-02cab6987b84",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e04e534e-d3e8-4e8d-9bc1-513df9436f95",
+              "name": "found",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "182bc33c-3327-4fff-8f9b-d59dc65d2fd6",
+              "name": "message",
+              "value": "Sorry, we couldn't find an order with that ID. Please check the order number and try again.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        672,
+        96
+      ],
+      "id": "4f3f376d-b0f1-4161-8b47-ca30fcce233d",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "72fea50a-550e-4b01-bad7-aafdb9bbf345",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7cb85a2afe24afc2a1d3a2cbc03e76b0ce9ebc00c944ad05a69b39bfac8de95f"
+  },
+  "nodeGroups": [],
+  "id": "lm3qw1RMcsJzecfA",
+  "tags": []
+}
